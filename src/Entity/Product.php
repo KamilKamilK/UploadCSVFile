@@ -20,7 +20,7 @@ class Product
     private ?string $name = null;
 
     #[ORM\Column(length: 8, unique: true)]
-    private ?int $index = null;
+    private ?int $productIndex = null;
 
     public function getId(): ?int
     {
@@ -39,14 +39,14 @@ class Product
         return $this;
     }
 
-    public function getIndex(): ?int
+    public function getProductIndex(): ?int
     {
-        return $this->index;
+        return $this->productIndex;
     }
 
-    public function setIndex(int $index): self
+    public function setProductIndex(int $productIndex): self
     {
-        $this->index = $index;
+        $this->productIndex = $productIndex;
 
         return $this;
     }

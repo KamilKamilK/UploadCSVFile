@@ -53,7 +53,7 @@ class ImportDataService {
 
 		return ( new Product() )
 			->setName( $product['name'] )
-//			->setIndex( (int)$product['index'] );
+			->setProductIndex( (int)$product['index'] )
 			->setCreatedAt( new \DateTime( '@' . strtotime( 'now' ) ) );
 	}
 
@@ -68,15 +68,19 @@ class ImportDataService {
 		unset( $inputFile );
 	}
 
-	public function getAllProducts(): QueryBuilder {
+	public function getAllProductsQuery(): QueryBuilder {
 		return $this->productRepository->getAllProductsQueryBuilder();
 	}
 
-	public function setPager( $products ): Pagerfanta {
-		$pagerfanta = new Pagerfanta( new QueryAdapter( $products ) );
-		$pagerfanta->setMaxPerPage( 10 );
-		$pagerfanta->setCurrentPage( 1 );
-
-		return $pagerfanta;
+	public function getAllProducts(  ): array {
+		return $this->productRepository->findAll();
 	}
+
+//	public function setPager( $products ): Pagerfanta {
+//		$pagerfanta = new Pagerfanta( new QueryAdapter( $products ) );
+//		$pagerfanta->setMaxPerPage( 10 );
+//		$pagerfanta->setCurrentPage( 1 );
+//
+//		return $pagerfanta;
+//	}
 }

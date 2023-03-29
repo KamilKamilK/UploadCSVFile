@@ -28,7 +28,9 @@ class ImportDataController extends AbstractController {
 		}
 
 		$products = $this->service->getAllProducts();
-		$pagerfanta = $this->service->setPager($products);
+
+//		dd($products);
+//		$pagerfanta = $this->service->setPager($products);
 
 		return $this->render( 'importData/import.html.twig', [
 			'products' => $products
