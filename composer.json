@@ -4,17 +4,26 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=8.0.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "babdev/pagerfanta-bundle": "3.6",
+        "doctrine/doctrine-bundle": "^2.9",
+        "doctrine/doctrine-migrations-bundle": "^3.2",
+        "doctrine/orm": "^2.14",
+        "sensio/framework-extra-bundle": "^6.2",
+        "stof/doctrine-extensions-bundle": "^1.7",
         "symfony/console": "5.4.*",
         "symfony/dotenv": "5.4.*",
         "symfony/flex": "^1.17|^2",
         "symfony/framework-bundle": "5.4.*",
+        "symfony/maker-bundle": "^1.48",
+        "symfony/monolog-bundle": "^3.0",
         "symfony/runtime": "5.4.*",
-        "symfony/yaml": "5.4.*"
-    },
-    "require-dev": {
+        "symfony/twig-bundle": "5.4.*",
+        "symfony/yaml": "5.4.*",
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {
@@ -61,8 +70,17 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
-            "require": "5.4.*"
+            "allow-contrib": true,
+            "require": "5.4.*",
+            "docker": true
         }
+    },
+    "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^3.4",
+        "symfony/debug-bundle": "5.4.*",
+        "symfony/stopwatch": "5.4.*",
+        "symfony/var-dumper": "5.4.*",
+        "symfony/web-profiler-bundle": "5.4.*",
+        "zenstruck/foundry": "^1.31"
     }
 }

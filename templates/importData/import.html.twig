@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Import CSV File{% endblock %}
+
+{% block body %}
+    <div id="wrap">
+        <div class="container">
+            <div class="row">
+                <form class="form-horizontal" action="{{ path('app_import_data') }}" method="post" name="upload_csv"
+                      enctype="multipart/form-data">
+                    <fieldset>
+                        <!-- Form Name -->
+                        <legend>Import CSV File</legend>
+                        <!-- File Button -->
+                        <div class="form-group">
+                            <label class="col-md-4 control-label" for="filebutton">Select File</label>
+                            <div class="col-md-4">
+                                <input type="file" name="file" id="file" class="input-large">
+                            </div>
+                        </div>
+                        <!-- Button -->
+                        <div class="form-group">
+                            <label class="col-md-4 control-label" for="singlebutton">Import data</label>
+                            <div class="col-md-4">
+                                <button type="submit" id="submit" name="Import" class="btn btn-primary button-loading"
+                                        data-loading-text="Loading...">Import
+                                </button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+            {% include 'importData/_productTable.html.twig' %}
+        </div>
+    </div>
+{% endblock %}
