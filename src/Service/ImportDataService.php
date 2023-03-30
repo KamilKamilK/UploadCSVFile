@@ -31,7 +31,9 @@ class ImportDataService {
 	public function saveFile( Request $request, $destination ): void {
 		/** @var UploadedFile $uploadedFile */
 		$uploadedFile = $request->files->get( 'file' );
+
 		$this->validateFileType($uploadedFile);
+
 		$originalFilename = pathinfo( $uploadedFile->getClientOriginalName(), PATHINFO_FILENAME );
 		$newFilename      = $originalFilename . '.' . $uploadedFile->guessClientExtension();
 		$uploadedFile->move( $destination, $newFilename );
@@ -81,6 +83,10 @@ class ImportDataService {
 
 	public function getAllProductsQuery(): QueryBuilder {
 		return $this->productRepository->getAllProductsQueryBuilder();
+	}
+
+	public function getAllProducts(): array {
+		return $this->productRepository->getAllProducts();
 	}
 
 	public function setPager( $products, $page ): Pagerfanta {

@@ -18,7 +18,7 @@ class ImportDataController extends AbstractController {
 		$this->service = $service;
 	}
 
-	#[Route( '/{page<\d+>}', name: 'app_import_data' , methods: 'POST')]
+	#[Route( '/{page<\d+>}', name: 'app_import_data' , methods: 'GET')]
 	public function importFile( Request $request, int $page = 1 ): Response {
 		if ( isset( $_POST["Import"] ) ) {
 			if ( $_FILES["file"]["size"] > 0 ) {

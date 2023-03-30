@@ -22,6 +22,10 @@ class Product
     #[ORM\Column(length: 8, unique: true)]
     private ?int $productIndex = null;
 
+    #[ORM\ManyToOne( targetEntity: Category::class, inversedBy: 'products' )]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Category $category = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -47,6 +51,18 @@ class Product
     public function setProductIndex(int $productIndex): self
     {
         $this->productIndex = $productIndex;
+
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
 
         return $this;
     }

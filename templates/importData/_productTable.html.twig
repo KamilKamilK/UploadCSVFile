@@ -5,12 +5,14 @@
         <tr>
             <th>Product name</th>
             <th>Product index</th>
+            <th>Product category</th>
         </tr>
 
         {% for product in products %}
             <tr>
                 <td>{{ product.name }}</td>
                 <td>{{ product.productindex }}</td>
+                <td>{{ product.category.name }}</td>
             </tr>
         {% endfor %}
     </table>

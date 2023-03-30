@@ -10,24 +10,20 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Product>
  *
- * @method Product|null find($id, $lockMode = null, $lockVersion = null)
- * @method Product|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Product|null find( $id, $lockMode = null, $lockVersion = null )
+ * @method Product|null findOneBy( array $criteria, array $orderBy = null )
  * @method Product[]    findAll()
- * @method Product[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Product[]    findBy( array $criteria, array $orderBy = null, $limit = null, $offset = null )
  */
-class ProductRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Product::class);
-    }
+class ProductRepository extends ServiceEntityRepository {
+	public function __construct( ManagerRegistry $registry ) {
+		parent::__construct( $registry, Product::class );
+	}
 
-	public function getAllProductsQueryBuilder(): QueryBuilder
-    {
-	    return $this->createQueryBuilder('q')
-	                ->orderBy('q.createdAt', 'ASC')
-		    ;
-    }
-
-
+	public function getAllProductsQueryBuilder(): QueryBuilder {
+		return $this->createQueryBuilder( 'product' )
+		            ->innerJoin( 'product.category', 'category' )
+		            ->addSelect( 'category' )
+		            ->orderBy( 'product.createdAt', 'ASC' );
+	}
 }
