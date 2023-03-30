@@ -5,76 +5,64 @@ namespace App\Service;
 use App\Entity\Category;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Finder\Finder;
 
 
 class ImportDataService {
 	private string $projectDir;
 	private LoggerInterface $logger;
 	private ProductRepository $productRepository;
+	private EntityManagerInterface $entityManager;
 
-	public function __construct( string $projectDir, LoggerInterface $logger, ProductRepository $productRepository ) {
+	public function __construct( string $projectDir, LoggerInterface $logger, ProductRepository $productRepository, EntityManagerInterface $entityManager ) {
 		$this->projectDir        = $projectDir;
 		$this->logger            = $logger;
 		$this->productRepository = $productRepository;
+		$this->entityManager     = $entityManager;
 	}
 
-	public function saveFile( Request $request, $destination ): void {
-		/** @var UploadedFile $uploadedFile */
-		$uploadedFile = $request->files->get( 'file' );
-
+	public function saveFile( $uploadedFile, $destination ): void {
 		$this->validateFileType( $uploadedFile );
 
 		$originalFilename = pathinfo( $uploadedFile->getClientOriginalName(), PATHINFO_FILENAME );
-		$newFilename      = $originalFilename . '.' . $uploadedFile->guessClientExtension();
+		$newFilename      = $originalFilename . '.' . $uploadedFile->guessExtension();
 		$uploadedFile->move( $destination, $newFilename );
 	}
 
-	public function getCsvAsArray() {
-		$inputFile = $this->projectDir . '/public/uploads/Produkty.csv';
-
-		try {
-			$CSVfile = file_get_contents( $inputFile );
-		} catch ( \Exception ) {
-			throw new \Exception( 'Produkty.csv file not found', 404 );
-		}
-
-		$decoder = new Serializer( [ new ObjectNormalizer() ], [ new CsvEncoder() ] );
-
-		return $decoder->decode( $CSVfile, 'csv' );
-	}
-
-	public function explodeProduct( $product ): array {
-		$productArr = explode( ';', array_values( $product )[0] );
-
-		return [ 'name' => $productArr[0], 'index' => $productArr[1], 'category' => $productArr[2] ];
+	public function mapProduct( $product ): array {
+		return [ 'name' => $product[0], 'index' => $product[1], 'category' => $product[2] ];
 	}
 
 	public function createNewProduct( $product, Category $category ): Product {
 
-		return ( new Product() )
+		$newProduct = ( new Product() )
 			->setName( $product['name'] )
 			->setProductIndex( $product['index'] )
 			->setCategory( $category )
-			->setCreatedAt( new \DateTime( '@' . strtotime( 'now' ) ) )
-			->setUpdatedAt( new \DateTime( '@' . strtotime( 'now' ) ) );
+			->setCreatedAt( new \DateTime() )
+			->setUpdatedAt( new \DateTime() );
+
+		$this->entityManager->persist( $newProduct );
+		return $newProduct;
 	}
+
 	public function createNewCategory( $product ): Category {
-		return (new Category())
-			->setName($product['category']);
+		$newCategory = ( new Category() )
+			->setName( $product['category'] );
+
+		$this->entityManager->persist( $newCategory );
+		$this->entityManager->flush();
+
+		return $newCategory;
 	}
 
-
-		public function logDuplicatedProduct( Product $product ): void {
+	public function logDuplicatedProduct( Product $product ): void {
 		$this->logger->info( sprintf( 'Product name %s with index %s is duplicated',
 			$product->getName(),
 			$product->getProductIndex()
@@ -91,10 +79,6 @@ class ImportDataService {
 		return $this->productRepository->getAllProductsQueryBuilder();
 	}
 
-	public function getAllProducts(): array {
-		return $this->productRepository->getAllProducts();
-	}
-
 	public function setPager( $products, $page ): Pagerfanta {
 		$pagerfanta = new Pagerfanta( new QueryAdapter( $products ) );
 		$pagerfanta->setMaxPerPage( 10 );
@@ -104,8 +88,34 @@ class ImportDataService {
 	}
 
 	public function validateFileType( $uploadedFile ): void {
-		if ( $uploadedFile->getClientMimeType() !== 'text/csv' ) {
+		if ( $uploadedFile->getMimeType() !== 'text/csv' ) {
 			throw new \Exception( 'File is not in CSV format' );
 		}
+	}
+
+	public function parseCSV($csvParsingOptions): array {
+		$ignoreFirstLine = $csvParsingOptions['ignoreFirstLine'];
+
+		$finder = new Finder();
+		$finder->files()
+		       ->in($csvParsingOptions['finder_in'])
+		       ->name($csvParsingOptions['finder_name'])
+		;
+
+
+		foreach ($finder as $file) { $csv = $file; }
+
+		$rows = array();
+		if (($handle = fopen($csv->getRealPath(), "r")) !== FALSE) {
+			$i = 0;
+			while (($data = fgetcsv($handle, null, ";")) !== FALSE) {
+				$i++;
+				if ($ignoreFirstLine && $i == 1) { continue; }
+				$rows[] = $data;
+			}
+			fclose($handle);
+		}
+
+		return $rows;
 	}
 }

@@ -2,7 +2,9 @@
 
 namespace App\Command;
 
-use App\Entity\Product;
+
+use App\Repository\CategoryRepository;
+use App\Repository\ProductRepository;
 use App\Service\ImportDataService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -10,10 +12,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-use function Zenstruck\Foundry\instantiate;
 
 
 #[AsCommand(
@@ -21,13 +19,29 @@ use function Zenstruck\Foundry\instantiate;
 	description: 'Use product.csv file to update database.',
 )]
 class ImportFileCommand extends Command {
+
+	private array $csvParsingOptions = [
+		'finder_in'       => 'public/uploads/',
+		'finder_name'     => 'Produkty.csv',
+		'ignoreFirstLine' => true
+	];
+
 	private ImportDataService $service;
 	private EntityManagerInterface $entityManager;
+	private ProductRepository $productRepository;
+	private CategoryRepository $categoryRepository;
 
-	public function __construct( ImportDataService $service, EntityManagerInterface $entityManager ) {
+	public function __construct(
+		ImportDataService $service,
+		EntityManagerInterface $entityManager,
+		ProductRepository $productRepository,
+		CategoryRepository $categoryRepository
+	) {
 		parent::__construct();
-		$this->service       = $service;
-		$this->entityManager = $entityManager;
+		$this->service            = $service;
+		$this->entityManager      = $entityManager;
+		$this->productRepository  = $productRepository;
+		$this->categoryRepository = $categoryRepository;
 	}
 
 	protected function configure(): void {
@@ -39,29 +53,28 @@ class ImportFileCommand extends Command {
 
 		$existingCount = 0;
 		$newCount      = 0;
-		$products      = $this->service->getCsvAsArray();
 
-		$productRepo = $this->entityManager->getRepository( Product::class );
+		$csv = $this->service->parseCSV( $this->csvParsingOptions, );
 
-		foreach ( $products as $product ) {
-			$product         = $this->service->explodeProduct( $product );
-			$existingProduct = $productRepo->findOneBy( [ 'productIndex' => $product['index'] ] );
+		foreach ( $csv as $product ) {
+			$product          = $this->service->mapProduct( $product );
+			$existingProduct  = $this->productRepository->findOneBy( [ 'productIndex' => $product['index'] ] );
+			$existingCategory = $this->categoryRepository->findOneBy( [ 'name' => $product['category'] ] );
 
-
-			if ( $existingProduct ) {
+			if ( $existingProduct !== null ) {
 				$this->service->logDuplicatedProduct( $existingProduct );
 				$existingCount ++;
 			} else {
-				$newCategory = $this->service->createNewCategory($product);
-				$newProduct = $this->service->createNewProduct( $product, $newCategory);
+				if ( ! $existingCategory ) {
+					$newCategory = $this->service->createNewCategory( $product );
+				}
+				$category = $newCategory ?? $existingCategory;
+				$this->service->createNewProduct( $product, $category );
 				$newCount ++;
-				$this->entityManager->persist( $newProduct );
-				$this->entityManager->persist( $newCategory );
 			}
 		}
 
 		$this->entityManager->flush();
-
 
 		$io = new SymfonyStyle( $input, $output );
 
