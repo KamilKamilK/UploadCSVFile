@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Insert password{% endblock %}
+
+{% block body %}
+    <div id="wrap">
+        <div class="container">
+            <div class="row">
+                <form class="form-horizontal" action="{{ path('app_security') }}">
+                    Hasło
+                    <input value="" type="password" name="password" />
+                    <input type="submit" name="submit" value="Log in" />
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
