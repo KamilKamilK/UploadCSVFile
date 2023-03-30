@@ -44,23 +44,25 @@ class ImportDataService {
 
 	public function explodeProduct( $product ): array {
 		$productArr = explode( ';', array_values( $product )[0] );
-
 		return [ 'name' => $productArr[0], 'index' => $productArr[1] ];
 
 	}
 
 	public function createNewProduct( $product ): Product {
 
+//		var_dump($product['name'], $product['index']);
 		return ( new Product() )
 			->setName( $product['name'] )
-			->setProductIndex( (int) $product['index'] )
-			->setCreatedAt( new \DateTime( '@' . strtotime( 'now' ) ) );
+			->setProductIndex( $product['index'] )
+			->setCreatedAt( new \DateTime( '@' . strtotime( 'now' ) ) )
+			->setUpdatedAt( new \DateTime( '@' . strtotime( 'now' ) ) );
 	}
 
-	public function logDuplicatedProduct( $product ): void {
+	public function logDuplicatedProduct( Product $product ): void {
 		$this->logger->info( sprintf( 'Product name %s with index %s is duplicated',
-			$product['name'],
-			$product['index'] ) );
+			$product->getName(),
+			$product->getProductIndex()
+		) );
 	}
 
 	public function deleteFile(): void {
