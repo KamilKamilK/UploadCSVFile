@@ -8,8 +8,10 @@ use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -29,7 +31,7 @@ class ImportDataService {
 	public function saveFile( Request $request, $destination ): void {
 		/** @var UploadedFile $uploadedFile */
 		$uploadedFile = $request->files->get( 'file' );
-
+		$this->validateFileType($uploadedFile);
 		$originalFilename = pathinfo( $uploadedFile->getClientOriginalName(), PATHINFO_FILENAME );
 		$newFilename      = $originalFilename . '.' . $uploadedFile->guessClientExtension();
 		$uploadedFile->move( $destination, $newFilename );
@@ -37,20 +39,26 @@ class ImportDataService {
 
 	public function getCsvAsArray() {
 		$inputFile = $this->projectDir . '/public/uploads/Produkty.csv';
-		$decoder   = new Serializer( [ new ObjectNormalizer() ], [ new CsvEncoder() ] );
 
-		return $decoder->decode( file_get_contents( $inputFile ), 'csv' );
+		try {
+			$CSVfile = file_get_contents( $inputFile );
+		} catch ( \Exception ) {
+			throw new \Exception( 'Produkty.csv file not found', 404 );
+		}
+
+		$decoder = new Serializer( [ new ObjectNormalizer() ], [ new CsvEncoder() ] );
+
+		return $decoder->decode( $CSVfile, 'csv' );
 	}
 
 	public function explodeProduct( $product ): array {
 		$productArr = explode( ';', array_values( $product )[0] );
-		return [ 'name' => $productArr[0], 'index' => $productArr[1] ];
 
+		return [ 'name' => $productArr[0], 'index' => $productArr[1] ];
 	}
 
 	public function createNewProduct( $product ): Product {
 
-//		var_dump($product['name'], $product['index']);
 		return ( new Product() )
 			->setName( $product['name'] )
 			->setProductIndex( $product['index'] )
@@ -66,8 +74,9 @@ class ImportDataService {
 	}
 
 	public function deleteFile(): void {
-		$inputFile = $this->projectDir . '/public/uploads/Produkty.csv';
-		unset( $inputFile );
+		$inputFile  = $this->projectDir . '/public/uploads/Produkty.csv';
+		$filesystem = new Filesystem();
+		$filesystem->remove( $inputFile );
 	}
 
 	public function getAllProductsQuery(): QueryBuilder {
@@ -80,5 +89,11 @@ class ImportDataService {
 		$pagerfanta->setCurrentPage( $page );
 
 		return $pagerfanta;
+	}
+
+	public function validateFileType( $uploadedFile ): void {
+		if ($uploadedFile->getClientMimeType() !== 'text/csv'){
+			throw new \Exception('File is not in CSV format');
+		}
 	}
 }
