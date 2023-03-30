@@ -59,7 +59,7 @@ symfony serve
 ## Authorization
 
 After you enter first page http://127.0.0.1:8000 you will notice you need to enter password.
-Correct password is : access
+Correct password is : `access`.
 After that it will redirect you to secured page.
 
 ## Import file
