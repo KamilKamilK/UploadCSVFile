@@ -52,7 +52,8 @@ class ImportFileCommand extends Command {
 				$this->service->logDuplicatedProduct( $existingProduct );
 				$existingCount ++;
 			} else {
-				$newProduct = $this->service->createNewProduct( $product );
+				$newCategory = $this->service->createNewCategory($product);
+				$newProduct = $this->service->createNewProduct( $product, $newCategory);
 				$newCount ++;
 				$this->entityManager->persist( $newProduct );
 			}
