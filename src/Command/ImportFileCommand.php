@@ -7,6 +7,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use App\Service\ImportDataService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -51,10 +52,16 @@ class ImportFileCommand extends Command {
 
 	protected function execute( InputInterface $input, OutputInterface $output ): int {
 
+		$io = new SymfonyStyle( $input, $output );
 		$existingCount = 0;
 		$newCount      = 0;
 
-		$csv = $this->service->parseCSV( $this->csvParsingOptions, );
+		try {
+			$csv = $this->service->parseCSV( $this->csvParsingOptions, );
+		} catch (Exception) {
+			$io->error( "There is no imported CSV file in uploads folder" );
+			return Command::FAILURE;
+		}
 
 		foreach ( $csv as $product ) {
 			$product          = $this->service->mapProduct( $product );
@@ -75,8 +82,6 @@ class ImportFileCommand extends Command {
 		}
 
 		$this->entityManager->flush();
-
-		$io = new SymfonyStyle( $input, $output );
 
 		$io->success( "Database is updated. There was $existingCount duplicates and $newCount new products added" );
 		$this->service->deleteFile();

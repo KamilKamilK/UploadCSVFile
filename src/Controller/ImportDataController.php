@@ -19,13 +19,13 @@ class ImportDataController extends AbstractController {
 		$this->service = $service;
 	}
 
-	#[Route( '/', name: 'app_security', methods: 'POST' )]
+	#[Route( '/', name: 'app_login', methods: 'GET' )]
 	public function insertPassword(): Response {
 		if ( isset( $_GET['password'] ) ) {
 			$password      = md5( $_GET['password'] );
 			$codedPassword = '9df3b01c60df20d13843841ff0d4482c';
 			if ( $password == $codedPassword ) {
-				echo "&rarr; I'll be logged in. Wait 2 seconds .";
+				echo "&rarr; TOU'll be logged in. Wait 2 seconds .";
 				session_start();
 				$_SESSION["session"] = "LoginSession";
 				header( "Refresh: 2; import/1" );

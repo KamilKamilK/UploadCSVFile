@@ -31,7 +31,7 @@ class ImportDataService {
 		$this->validateFileType( $uploadedFile );
 
 		$originalFilename = pathinfo( $uploadedFile->getClientOriginalName(), PATHINFO_FILENAME );
-		$newFilename      = $originalFilename . '.' . $uploadedFile->guessExtension();
+		$newFilename      = $originalFilename . '.' . $uploadedFile->guessClientExtension();
 		$uploadedFile->move( $destination, $newFilename );
 	}
 
@@ -88,7 +88,7 @@ class ImportDataService {
 	}
 
 	public function validateFileType( $uploadedFile ): void {
-		if ( $uploadedFile->getMimeType() !== 'text/csv' ) {
+		if ( $uploadedFile->getClientMimeType() !== 'text/csv' ) {
 			throw new \Exception( 'File is not in CSV format' );
 		}
 	}
