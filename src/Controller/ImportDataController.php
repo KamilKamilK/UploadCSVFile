@@ -18,8 +18,8 @@ class ImportDataController extends AbstractController {
 		$this->service = $service;
 	}
 
-	#[Route( '/import/data', name: 'app_import_data' )]
-	public function saveFile( Request $request, ): Response {
+	#[Route( '/{page<\d+>}', name: 'app_import_data' )]
+	public function saveFile( Request $request, int $page = 1 ): Response {
 		if ( isset( $_POST["Import"] ) ) {
 			if ( $_FILES["file"]["size"] > 0 ) {
 				$destination = $this->getParameter( 'kernel.project_dir' ) . '/public/uploads';
@@ -27,13 +27,11 @@ class ImportDataController extends AbstractController {
 			}
 		}
 
-		$products = $this->service->getAllProducts();
-
-//		dd($products);
-//		$pagerfanta = $this->service->setPager($products);
+		$products   = $this->service->getAllProductsQuery();
+		$pagerfanta = $this->service->setPager( $products, $page );
 
 		return $this->render( 'importData/import.html.twig', [
-			'products' => $products
+			'products' => $pagerfanta
 		] );
 	}
 }
