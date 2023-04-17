@@ -42,24 +42,14 @@ database server and update the `DATABASE_URL` environment variable in
 
 **Start the Symfony web server**
 
-You can use Nginx or Apache, but Symfony's local web server
-works even better.
-
-To install the Symfony local web server, follow
-"Downloading the Symfony client" instructions found
-here: https://symfony.com/download - you only need to do this
-once on your system.
-
-Then, to start the web server, open a terminal, move into the
-project, and run:
-
 ```
 symfony serve
 ```
 ## Authorization
 
-After you enter first page http://127.0.0.1:8000 you will notice you need to enter password.
-Correct password is : `access`.
+After you enter local page http://127.0.0.1:8000 you will notice email and password is required.
+Correct email is : `user@example.com`.
+Correct password is : `enter`.
 After that it will redirect you to secured page.
 
 ## Import file
