@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Service\ImportDataService;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,26 +20,8 @@ class ImportDataController extends AbstractController {
 		$this->service = $service;
 	}
 
-	#[Route( '/', name: 'app_login', methods: 'GET' )]
-	public function insertPassword(): Response {
-		if ( isset( $_GET['password'] ) ) {
-			$password      = md5( $_GET['password'] );
-			$codedPassword = '9df3b01c60df20d13843841ff0d4482c';
-			if ( $password == $codedPassword ) {
-				echo "&rarr; TOU'll be logged in. Wait 2 seconds .";
-				session_start();
-				$_SESSION["session"] = "LoginSession";
-				header( "Refresh: 2; import/1" );
-			}
-			if ( $password !== $codedPassword ) {
-				echo '&rarr; Password is wrong!! Try again.';
-			}
-		}
-
-		return $this->render( 'security.html.twig' );
-	}
-
 	#[Route( '/import/{page<\d+>}', name: 'app_import_data' )]
+	#[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
 	public function importFile( Request $request, int $page = 1 ): Response {
 		if ( isset( $_POST["Import"] ) ) {
 			if ( $_FILES["file"]["size"] > 0 ) {
